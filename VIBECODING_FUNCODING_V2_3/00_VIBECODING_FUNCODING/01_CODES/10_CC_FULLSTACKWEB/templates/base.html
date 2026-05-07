@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}AICOM - 커뮤니티 서비스{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
+    
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <!-- Custom Tailwind Config for shadcn/ui style -->
+    <script>
+        // Wait for Tailwind to load
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        border: "hsl(var(--border, 214 32% 91%))",
+                        input: "hsl(var(--input, 214 32% 91%))",
+                        ring: "hsl(var(--ring, 222 47% 11%))",
+                        background: "hsl(var(--background, 0 0% 100%))",
+                        foreground: "hsl(var(--foreground, 222 47% 11%))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary, 222 47% 11%))",
+                            foreground: "hsl(var(--primary-foreground, 210 40% 98%))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary, 210 40% 96%))",
+                            foreground: "hsl(var(--secondary-foreground, 222 47% 11%))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive, 0 84% 60%))",
+                            foreground: "hsl(var(--destructive-foreground, 210 40% 98%))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted, 210 40% 96%))",
+                            foreground: "hsl(var(--muted-foreground, 215 16% 47%))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent, 210 40% 96%))",
+                            foreground: "hsl(var(--accent-foreground, 222 47% 11%))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius, 0.5rem)",
+                        md: "calc(var(--radius, 0.5rem) - 2px)",
+                        sm: "calc(var(--radius, 0.5rem) - 4px)",
+                    },
+                },
+            },
+        }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --ring: 222.2 47.4% 11.2%;
+            --radius: 0.5rem;
+        }
+        
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+        
+        * {
+            border-color: hsl(var(--border));
+        }
+        
+        body {
+            color: hsl(var(--foreground));
+            background-color: hsl(var(--background));
+        }
+        
+        /* HTMX indicator styles */
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+        .htmx-request.htmx-indicator {
+            display: inline;
+        }
+    </style>
+    
+    <!-- HTMX Configuration -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add CSRF token to all HTMX requests
+            document.body.addEventListener('htmx:configRequest', function(evt) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                evt.detail.headers['X-CSRF-Token'] = csrfToken;
+            });
+        });
+    </script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="h-full bg-background font-sans antialiased">
+    {% block content %}{% endblock %}
+</body>
+</html>

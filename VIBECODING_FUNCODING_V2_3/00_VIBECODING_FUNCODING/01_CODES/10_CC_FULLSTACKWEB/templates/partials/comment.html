@@ -1,0 +1,130 @@
+<div class="comment border-l-2 {% if comment.parent_id %}ml-8 border-l-muted{% else %}border-l-primary{% endif %}" id="comment-{{ comment.id }}">
+    <div class="pl-4">
+        <div class="bg-white rounded-lg p-4 {% if comment.parent_id %}bg-muted/10{% endif %}">
+            <!-- Comment Header -->
+            <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="font-medium">{{ comment.author.username if comment.author else '알 수 없음' }}</span>
+                    <span class="text-muted-foreground">{{ comment.created_at|date }}</span>
+                    {% if comment.parent_id %}
+                    <span class="text-xs text-muted-foreground">(대댓글)</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    {% if user and not comment.parent_id %}
+                    <button 
+                        onclick="toggleReplyForm('{{ comment.id }}')"
+                        class="text-xs text-primary hover:underline">
+                        답글
+                    </button>
+                    {% endif %}
+                    {% if user and (user.sub == comment.user_id or user.is_admin) %}
+                    <button 
+                        hx-delete="/api/comments/{{ comment.id }}"
+                        hx-confirm="정말로 이 댓글을 삭제하시겠습니까?"
+                        hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'
+                        hx-swap="none"
+                        hx-on::after-request="if(event.detail.xhr.status === 204) { window.location.reload(); }"
+                        class="text-xs text-destructive hover:underline">
+                        삭제
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Comment Content -->
+            <div class="text-sm">{{ comment.content }}</div>
+            
+            <!-- Reply Form (hidden by default) -->
+            {% if user and not comment.parent_id %}
+            <div id="reply-form-{{ comment.id }}" class="mt-3 hidden">
+                <form hx-post="/api/comments"
+                      hx-ext="json-enc"
+                      hx-target="#comment-{{ comment.id }}"
+                      hx-swap="none"
+                      hx-on::after-request="if(event.detail.xhr.status === 201) { hideReplyForm('{{ comment.id }}'); window.location.reload(); }">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="flex gap-2">
+                        <input
+                            type="text"
+                            name="content"
+                            required
+                            placeholder="대댓글을 작성하세요..."
+                            class="flex-1 px-3 py-1 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                        <button type="submit" 
+                                class="px-3 py-1 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:bg-primary/90">
+                            작성
+                        </button>
+                        <button type="button" 
+                                onclick="hideReplyForm('{{ comment.id }}')"
+                                class="px-3 py-1 border border-input rounded-md text-xs font-medium hover:bg-accent">
+                            취소
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Replies -->
+        {% if comment.replies %}
+        <div class="mt-2 space-y-2">
+            {% for reply in comment.replies %}
+                {% with comment=reply %}
+                    {% include 'partials/comment.html' %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Initialize reply forms on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all reply forms and add event handlers
+    document.querySelectorAll('[id^="reply-form-"]').forEach(function(formDiv) {
+        const form = formDiv.querySelector('form');
+        if (form && !form.hasAttribute('data-csrf-configured')) {
+            form.setAttribute('data-csrf-configured', 'true');
+            form.addEventListener('htmx:configRequest', function(event) {
+                const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+                const postId = form.querySelector('input[name="post_id"]').value;
+                const parentId = form.querySelector('input[name="parent_id"]').value;
+                if (event.detail.parameters) {
+                    if (csrfToken) {
+                        event.detail.parameters.csrf_token = csrfToken;
+                    }
+                    if (postId) {
+                        event.detail.parameters.post_id = postId;
+                    }
+                    if (parentId) {
+                        event.detail.parameters.parent_id = parentId;
+                    }
+                }
+            });
+        }
+    });
+});
+
+function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            form.querySelector('input[name="content"]').focus();
+        }
+    }
+}
+
+function hideReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.classList.add('hidden');
+        form.querySelector('input[name="content"]').value = '';
+    }
+}
+</script>

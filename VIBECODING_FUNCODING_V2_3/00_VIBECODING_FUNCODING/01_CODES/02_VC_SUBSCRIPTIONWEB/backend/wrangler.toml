@@ -1,0 +1,10 @@
+name = "newsletter-backend"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "."
+
+# D1 데이터베이스 바인딩
+[[d1_databases]]
+binding = "DB"
+database_name = "newsletter_db"
+database_id = "efe9ae23-0e4c-474c-be20-a3aa4aff953a"
+

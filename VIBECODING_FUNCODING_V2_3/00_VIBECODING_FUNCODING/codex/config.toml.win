@@ -1,0 +1,42 @@
+[mcp_servers.playwright]
+command = "C:/Program Files/nodejs/npx.cmd"
+args = ["-y", "@playwright/mcp@latest"]
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.context7]
+command = "C:/Program Files/nodejs/npx.cmd"
+args = ["-y", "@upstash/context7-mcp"]
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[features]
+rmcp_client = true
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+
+[mcp_servers.github.http_headers]
+Authorization = "Bearer 토큰"
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=프로젝트트"
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+
+[mcp_servers.cloudflare-bindings]
+url = "https://bindings.mcp.cloudflare.com/mcp"
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+
+[mcp_servers.cloudflare-docs]
+url = "https://docs.mcp.cloudflare.com/mcp"
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+
+[mcp_servers.cloudflare-observability]
+url = "https://observability.mcp.cloudflare.com/mcp"
+startup_timeout_sec = 60
+tool_timeout_sec = 120

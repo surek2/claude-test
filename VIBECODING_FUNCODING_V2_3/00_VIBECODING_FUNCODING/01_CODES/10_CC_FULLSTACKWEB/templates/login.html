@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 - AICOM{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col">
+    <!-- Header -->
+    <header class="border-b">
+        <div class="container mx-auto flex h-16 items-center px-4">
+            <div class="flex items-center justify-between w-full">
+                <a href="/" class="text-xl font-semibold">AICOM</a>
+                <div class="flex items-center gap-4">
+                    <a 
+                        href="/login"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                    >
+                        로그인
+                    </a>
+                    <a 
+                        href="/signup"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
+                        회원가입
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login Form -->
+    <main class="flex-1 flex items-center justify-center py-12">
+        <div class="mx-auto max-w-sm w-full px-4">
+            <form 
+                id="login-form"
+                hx-post="/api/auth/login"
+                hx-trigger="submit"
+                hx-target="#error-message"
+                hx-swap="innerHTML"
+                class="space-y-6"
+            >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                
+                <div class="space-y-2 text-center">
+                    <h1 class="text-2xl font-semibold tracking-tight">로그인</h1>
+                    <p class="text-sm text-muted-foreground">
+                        이메일과 비밀번호를 입력하세요
+                    </p>
+                </div>
+
+                <!-- Error Message -->
+                <div id="error-message" class="text-sm text-destructive text-center"></div>
+
+                <div class="space-y-4">
+                    <!-- Email Input -->
+                    <div class="space-y-2">
+                        <label for="email" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            이메일
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            autocomplete="email"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="name@example.com"
+                        />
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="space-y-2">
+                        <label for="password" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            비밀번호
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="비밀번호를 입력하세요"
+                        />
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+                >
+                    로그인
+                </button>
+            </form>
+
+            <div class="mt-4 text-center text-sm">
+                아직 계정이 없으신가요?{" "}
+                <a href="/signup" class="underline underline-offset-4 hover:text-primary">
+                    회원가입
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Handle login response
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.elt.matches('form[hx-post="/api/auth/login"]')) {
+            if (evt.detail.successful && evt.detail.xhr.status === 200) {
+                try {
+                    const response = JSON.parse(evt.detail.xhr.responseText);
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                    }
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                }
+            } else if (evt.detail.xhr.status >= 400) {
+                // Parse error response
+                try {
+                    const errorResponse = JSON.parse(evt.detail.xhr.responseText);
+                    const errorMsg = errorResponse.error || errorResponse.detail || '오류가 발생했습니다';
+                    document.getElementById('error-message').innerHTML = 
+                        `<div class="text-destructive">${errorMsg}</div>`;
+                } catch (e) {
+                    if (evt.detail.xhr.status === 401) {
+                        document.getElementById('error-message').innerHTML = 
+                            '<div class="text-destructive">이메일 또는 비밀번호가 올바르지 않습니다</div>';
+                    } else {
+                        document.getElementById('error-message').innerHTML = 
+                            '<div class="text-destructive">오류가 발생했습니다</div>';
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

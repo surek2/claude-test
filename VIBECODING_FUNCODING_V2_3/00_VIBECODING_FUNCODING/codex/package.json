@@ -1,0 +1,21 @@
+{
+  "name": "tomorrow-record",
+  "version": "1.0.0",
+  "description": "간단한 내일 기록 웹 애플리케이션",
+  "scripts": {
+    "dev": "wrangler pages dev . --d1 DB=tomorrow-records",
+    "deploy": "wrangler pages deploy .",
+    "create-db": "wrangler d1 create tomorrow-records"
+  },
+  "keywords": [
+    "cloudflare",
+    "pages",
+    "d1",
+    "diary"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}

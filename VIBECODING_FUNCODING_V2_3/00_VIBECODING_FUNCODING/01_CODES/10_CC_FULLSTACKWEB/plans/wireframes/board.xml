@@ -1,0 +1,20 @@
+<page path="/board:board_id:post_id">
+    <header></header>
+    <boards>
+        <left>
+        <items>게시판 목록</items>
+        </left>
+        <center><title>선택한 글 타이틀</title></center>
+        <center><content>선택한 글 내용</content></center>
+        <right>
+        <item>검색</item>
+        </right>
+    </boards>
+    <footer>
+        <left>
+        <item>이용약관</item>
+        <item>개인정보처리방침</item>
+        </left>
+        <center>Copyright 2025 AICOM. All rights reserved.</center>
+    </footer>
+</page>

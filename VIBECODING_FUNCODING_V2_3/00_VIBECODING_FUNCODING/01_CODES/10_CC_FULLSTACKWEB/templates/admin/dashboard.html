@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 대시보드 - AICOM{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col">
+    <!-- Header -->
+    <header class="border-b">
+        <div class="container mx-auto flex h-16 items-center px-4">
+            <div class="flex items-center justify-between w-full">
+                <div class="flex items-center gap-4">
+                    <a href="/" class="text-xl font-semibold">AICOM</a>
+                    <span class="text-sm text-muted-foreground">관리자</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-muted-foreground">{{ user.username or user.email }}</span>
+                    <button 
+                        hx-post="/api/auth/logout"
+                        hx-redirect="/"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                    >
+                        로그아웃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+        <aside class="w-64 border-r bg-muted/40">
+            <nav class="flex flex-col gap-2 p-4">
+                <a href="/admin" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    대시보드
+                </a>
+                <a href="/admin/boards" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    게시판 관리
+                </a>
+                <a href="/admin/users" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    사용자 관리
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold tracking-tight">관리자 대시보드</h1>
+                <p class="text-muted-foreground">AICOM 커뮤니티 서비스 관리</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid gap-4 md:grid-cols-3 mb-8">
+                <div class="rounded-lg border bg-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-muted-foreground">전체 게시판</p>
+                            <p class="text-2xl font-bold">{{ total_boards }}</p>
+                        </div>
+                        <svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="rounded-lg border bg-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-muted-foreground">전체 사용자</p>
+                            <p class="text-2xl font-bold">{{ total_users }}</p>
+                        </div>
+                        <svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="rounded-lg border bg-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-muted-foreground">관리자</p>
+                            <p class="text-2xl font-bold">{{ admin_users }}</p>
+                        </div>
+                        <svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Boards -->
+            <div class="rounded-lg border bg-card">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold mb-4">최근 게시판</h2>
+                    <div class="space-y-4">
+                        {% for board in boards[:5] %}
+                        <div class="flex items-center justify-between p-4 rounded-lg border bg-background">
+                            <div>
+                                <h3 class="font-medium">{{ board.name }}</h3>
+                                <p class="text-sm text-muted-foreground">{{ board.description }}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-muted-foreground">
+                                    읽기: {{ "모두" if board.can_read == "all" else ("회원" if board.can_read == "member" else "관리자") }}
+                                </span>
+                                <span class="text-sm text-muted-foreground">
+                                    쓰기: {{ "모두" if board.can_write == "all" else ("회원" if board.can_write == "member" else "관리자") }}
+                                </span>
+                                <a href="/admin/boards" class="text-sm text-primary hover:underline">편집</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if not boards %}
+                        <p class="text-center text-muted-foreground py-8">게시판이 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

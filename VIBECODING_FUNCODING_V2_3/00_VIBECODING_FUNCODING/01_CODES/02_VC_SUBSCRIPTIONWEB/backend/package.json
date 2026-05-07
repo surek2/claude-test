@@ -1,0 +1,10 @@
+{
+  "name": "newsletter-backend",
+  "version": "1.0.0",
+  "description": "Newsletter Subscription Backend API",
+  "scripts": {
+    "dev": "npx wrangler pages dev .",
+    "deploy": "npx wrangler pages deploy . --project-name=newsletter-backend"
+  }
+}
+

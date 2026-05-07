@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}500 - 서버 오류{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col">
+    <!-- Header -->
+    <header class="border-b">
+        <div class="container mx-auto flex h-16 items-center px-4">
+            <div class="flex items-center justify-between w-full">
+                <a href="/" class="text-xl font-semibold">AICOM</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Error Content -->
+    <main class="flex-1 flex items-center justify-center px-4">
+        <div class="text-center">
+            <h1 class="text-9xl font-bold text-destructive">500</h1>
+            <p class="text-2xl font-semibold mt-4">서버 오류가 발생했습니다</p>
+            <p class="text-muted-foreground mt-2">일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+            <div class="mt-6">
+                <a 
+                    href="/"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                >
+                    홈으로 돌아가기
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                    <a href="/terms" class="hover:text-foreground transition-colors">이용약관</a>
+                    <a href="/privacy" class="hover:text-foreground transition-colors">개인정보처리방침</a>
+                </div>
+                <p class="text-sm text-muted-foreground">
+                    Copyright 2025 AICOM. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+{% endblock %}

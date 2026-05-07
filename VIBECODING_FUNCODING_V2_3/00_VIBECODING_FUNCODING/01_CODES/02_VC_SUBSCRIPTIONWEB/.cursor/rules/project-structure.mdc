@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+---
+# 뉴스레터 구독 시스템
+
+## 프로젝트 개요
+- **목적**: 뉴스레터 구독을 위한 풀스택 애플리케이션
+- **아키텍처**: 프론트엔드/백엔드 분리형
+- **배포**:
+  - Frontend: CloudFlare Pages
+  - Backend: CloudFlare Pages Functions
+  - Database: CloudFlare D1
+
+## 기술 스택
+  - 프론트엔드: HTML, CSS, Javascript + Tailwind CSS in Cloudflare Pages
+  - 백엔드: Javascript in Cloudflare Pages Functions
+
+**중요 사항**
+- 배포: Cloudflare MCP 를 사용해서 직접 배포해주세요
+- 테스트 규칙: Playwright mcp 를 사용해서 직접 테스트해주세요
+
+## 핵심 원칙
+1. **완전한 분리**: 프론트엔드와 백엔드는 독립적인 프로젝트
+2. **API 통신**: REST API를 통한 통신
+3. **CORS 설정**: 크로스 도메인 요청 처리 필수
+
+## 개발 시 주의사항
+- 루트 폴더의 rules를 반드시 참조
+- 프론트엔드에서 백엔드 코드 작성 금지
+- 백엔드에서 프론트엔드 코드 작성 금지
+

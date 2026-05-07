@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}오류 - AICOM{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col">
+    <!-- Header -->
+    <header class="border-b">
+        <div class="container mx-auto flex h-16 items-center px-4">
+            <div class="flex items-center justify-between w-full">
+                <a href="/" class="text-xl font-semibold">AICOM</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Error Content -->
+    <main class="flex-1 flex items-center justify-center py-12">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold mb-4">접근 권한 없음</h1>
+            <p class="text-lg text-muted-foreground mb-8">{{ error }}</p>
+            {% if redirect %}
+            <a 
+                href="{{ redirect }}"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            >
+                로그인하기
+            </a>
+            {% else %}
+            <a 
+                href="/"
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            >
+                홈으로 돌아가기
+            </a>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

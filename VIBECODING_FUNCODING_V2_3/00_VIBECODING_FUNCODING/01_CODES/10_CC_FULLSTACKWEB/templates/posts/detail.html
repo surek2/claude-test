@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ board.name }} - AICOM{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+        <div class="container flex h-14 items-center mx-auto px-4 sm:px-6">
+            <div class="mr-4 flex">
+                <a href="/" class="mr-6 flex items-center space-x-2">
+                    <span class="font-bold">AICOM</span>
+                </a>
+            </div>
+            <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+                <nav class="flex items-center space-x-6 text-sm font-medium">
+                    {% if user %}
+                        <span class="text-foreground">{{ user.username or user.email }}</span>
+                        <a href="#" 
+                           hx-post="/api/auth/logout"
+                           hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'
+                           class="text-foreground/60 transition-colors hover:text-foreground">
+                            로그아웃
+                        </a>
+                    {% else %}
+                        <a href="/login" class="text-foreground/60 transition-colors hover:text-foreground">
+                            로그인
+                        </a>
+                        <a href="/signup" class="text-foreground/60 transition-colors hover:text-foreground">
+                            회원가입
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Back Button -->
+            <div class="mb-6">
+                <a href="/?board={{ board.slug }}{% if from_page > 1 %}&page={{ from_page }}{% endif %}" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    {{ board.name }}로 돌아가기
+                </a>
+            </div>
+
+            <!-- Post Content -->
+            <article class="bg-white rounded-lg border border-border shadow-sm">
+                <!-- Post Header -->
+                <div class="p-6 border-b border-border">
+                    <h1 class="text-2xl font-bold mb-4">
+                        {% if post.is_pinned %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary text-primary-foreground mr-2">
+                                고정
+                            </span>
+                        {% endif %}
+                        {{ post.title }}
+                    </h1>
+                    <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <span>작성자: {{ post.author.username if post.author else '알 수 없음' }}</span>
+                        <span>{{ post.created_at|date }}</span>
+                        <span>조회수: {{ post.view_count }}</span>
+                        {% if can_edit %}
+                        <div class="ml-auto flex gap-2">
+                            <a href="/boards/{{ board.slug }}/posts/{{ post.id }}/edit" 
+                               class="text-primary hover:underline">
+                                수정
+                            </a>
+                            <button 
+                                hx-delete="/api/posts/{{ post.id }}"
+                                hx-confirm="정말로 이 게시글을 삭제하시겠습니까?"
+                                hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'
+                                class="text-destructive hover:underline">
+                                삭제
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Post Body -->
+                <div class="p-6 prose prose-sm max-w-none">
+                    {{ post.content|safe }}
+                </div>
+            </article>
+
+            <!-- Comments Section -->
+            <div class="mt-8">
+                <h2 class="text-lg font-semibold mb-4">댓글 {{ comments|length }}개</h2>
+
+                <!-- Comment Form (logged in users only) -->
+                {% if user %}
+                <form id="comment-form"
+                      hx-post="/api/comments"
+                      hx-ext="json-enc"
+                      hx-swap="none"
+                      class="mb-6">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="border border-border rounded-lg p-4 bg-white">
+                        <textarea
+                            name="content"
+                            rows="3"
+                            required
+                            placeholder="댓글을 작성해주세요..."
+                            class="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+                        ></textarea>
+                        <div class="mt-3 flex justify-end">
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+                                댓글 작성
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <div class="mb-6 p-4 bg-muted/30 rounded-lg text-center">
+                    <p class="text-sm text-muted-foreground">
+                        댓글을 작성하려면 <a href="/login?next={{ request.url }}" class="text-primary hover:underline">로그인</a>이 필요합니다.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Comments List -->
+                <div id="comments-list" class="space-y-4">
+                    {% for comment in comments %}
+                        {% include 'partials/comment.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// Handle successful deletion
+document.addEventListener('htmx:afterRequest', function(event) {
+    if (event.detail.successful && event.detail.xhr.status === 204) {
+        if (event.detail.verb === 'delete' && event.detail.path.includes('/api/posts/')) {
+            // Redirect to board list after successful deletion
+            window.location.href = '/?board={{ board.slug }}{% if from_page > 1 %}&page={{ from_page }}{% endif %}';
+        }
+    }
+});
+
+// Add CSRF token and post_id to JSON payload for comment form
+if (document.getElementById('comment-form')) {
+    document.getElementById('comment-form').addEventListener('htmx:configRequest', function(event) {
+        // Add CSRF token to the JSON payload
+        const csrfToken = document.querySelector('#comment-form input[name="csrf_token"]').value;
+        const postId = document.querySelector('#comment-form input[name="post_id"]').value;
+        if (event.detail.parameters) {
+            if (csrfToken) {
+                event.detail.parameters.csrf_token = csrfToken;
+            }
+            if (postId) {
+                event.detail.parameters.post_id = postId;
+            }
+        }
+    });
+}
+
+// Handle comment form submission
+document.addEventListener('htmx:afterRequest', function(event) {
+    if (event.detail.elt && event.detail.elt.id === 'comment-form') {
+        if (event.detail.xhr.status === 201) {
+            // Reload page to show new comment
+            window.location.reload();
+        } else if (event.detail.xhr.status >= 400) {
+            alert('댓글 작성 중 오류가 발생했습니다.');
+        }
+    }
+});
+</script>
+{% endblock %}

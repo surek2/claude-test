@@ -1,0 +1,11 @@
+name = "tomorrow-record"
+compatibility_date = "2024-01-01"
+
+# Pages 프로젝트 설정
+pages_build_output_dir = "."
+
+# D1 데이터베이스 바인딩
+[[d1_databases]]
+binding = "DB"
+database_name = "tomorrow-records"
+database_id = "dd255874-6910-4559-88fd-f4bedb9576c5"

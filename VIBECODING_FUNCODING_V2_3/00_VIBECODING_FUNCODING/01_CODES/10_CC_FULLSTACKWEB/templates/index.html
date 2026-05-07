@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}AICOM - 커뮤니티 서비스{% endblock %}
+
+{% block content %}
+<div class="flex min-h-full flex-col">
+    <!-- Header -->
+    <header class="border-b">
+        <div class="container mx-auto flex h-16 items-center px-4">
+            <div class="flex items-center justify-between w-full">
+                <a href="/" class="text-xl font-semibold">AICOM</a>
+                <div class="flex items-center gap-4">
+                    {% if user %}
+                        <span class="text-sm text-muted-foreground">{{ user.username or user.email }}</span>
+                        <form hx-post="/api/auth/logout" 
+                              hx-target="body"
+                              hx-swap="none"
+                              class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                                로그아웃
+                            </button>
+                        </form>
+                    {% else %}
+                        <a 
+                            href="/login"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                        >
+                            로그인
+                        </a>
+                        <a 
+                            href="/signup"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                        >
+                            회원가입
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <!-- Hero Section -->
+        <section class="w-full py-8 md:py-12 border-b">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight">
+                        아이컴(AICOM) 커뮤니티 서비스에<br> 
+                        오신 것을 환영합니다
+                    </h1>
+                </div>
+            </div>
+        </section>
+
+        <!-- Board Content Section -->
+        <section class="w-full">
+            <div class="container mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left: Board List -->
+                    <div class="lg:col-span-3">
+                        <div class="rounded-lg border bg-card">
+                            <div class="p-4 border-b">
+                                <h2 class="font-semibold">게시판</h2>
+                            </div>
+                            <nav class="p-2">
+                                {% for b in boards %}
+                                <button 
+                                    hx-get="/api/boards/{{ b.slug }}/posts-html"
+                                    hx-target="#board-content"
+                                    hx-push-url="true"
+                                    hx-trigger="click"
+                                    data-board-slug="{{ b.slug }}"
+                                    data-board-name="{{ b.name }}"
+                                    class="board-link block w-full text-left px-4 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors {% if b.slug == active_board_slug %}bg-accent text-accent-foreground font-medium{% endif %}"
+                                >
+                                    {{ b.name }}
+                                </button>
+                                {% endfor %}
+                                {% if user and user.is_admin %}
+                                <div class="border-t mt-2 pt-2">
+                                    <a 
+                                        href="/admin"
+                                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-primary"
+                                    >
+                                        <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        관리자 대시보드
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Center: Posts List (HTMX Target) -->
+                    <div class="lg:col-span-6" id="board-content">
+                        <!-- Initial content will be loaded here -->
+                    </div>
+
+                    <!-- Right: Search -->
+                    <div class="lg:col-span-3">
+                        <div class="rounded-lg border bg-card p-4">
+                            <h3 class="font-semibold mb-4">검색</h3>
+                            <form id="search-form">
+                                <div class="space-y-3">
+                                    <select
+                                        id="search-type"
+                                        name="search_type"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="all">전체</option>
+                                        <option value="title">제목</option>
+                                        <option value="content">내용</option>
+                                    </select>
+                                    <input
+                                        type="text"
+                                        id="search-query"
+                                        name="q"
+                                        placeholder="검색어를 입력하세요"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+                                    >
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        검색
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                    <a href="/terms" class="hover:text-foreground transition-colors">이용약관</a>
+                    <a href="/privacy" class="hover:text-foreground transition-colors">개인정보처리방침</a>
+                </div>
+                <p class="text-sm text-muted-foreground">
+                    Copyright 2025 AICOM. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+// Current board tracking
+let currentBoardSlug = null;
+
+// Load initial board on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get board from URL parameter or use active_board_slug from server
+    const urlParams = new URLSearchParams(window.location.search);
+    const boardParam = urlParams.get('board');
+    const pageParam = urlParams.get('page') || '{{ initial_page }}' || '1';
+    const activeBoardSlug = boardParam || '{{ active_board_slug }}' || 'gongjisahang';
+    
+    const boardButton = document.querySelector(`[data-board-slug="${activeBoardSlug}"]`);
+    if (boardButton) {
+        // If page parameter exists, load that specific page
+        if (pageParam && pageParam !== '1') {
+            const url = `/api/boards/${activeBoardSlug}/posts-html?page=${pageParam}`;
+            htmx.ajax('GET', url, '#board-content');
+            // Update button styling
+            boardButton.classList.add('bg-accent', 'text-accent-foreground', 'font-medium');
+            currentBoardSlug = activeBoardSlug;
+        } else {
+            boardButton.click();
+        }
+    }
+});
+
+// Handle board selection
+document.addEventListener('htmx:beforeRequest', function(event) {
+    if (event.target.matches('.board-link')) {
+        // Reset to page 1 when changing boards
+        const boardSlug = event.target.dataset.boardSlug;
+        const newUrl = `/?board=${boardSlug}`;
+        history.pushState({board: boardSlug, page: 1}, '', newUrl);
+        
+        // Update the URL in the HTMX request to include page 1
+        const currentUrl = new URL(event.detail.pathInfo.requestPath, window.location.origin);
+        currentUrl.searchParams.set('page', '1');
+        event.detail.pathInfo.requestPath = currentUrl.pathname + currentUrl.search;
+    }
+});
+
+document.addEventListener('htmx:afterRequest', function(event) {
+    if (event.target.matches('.board-link')) {
+        // Update active board styling
+        document.querySelectorAll('.board-link').forEach(btn => {
+            btn.classList.remove('bg-accent', 'text-accent-foreground', 'font-medium');
+        });
+        event.target.classList.add('bg-accent', 'text-accent-foreground', 'font-medium');
+        
+        // Update current board
+        currentBoardSlug = event.target.dataset.boardSlug;
+    }
+});
+
+// Handle search form
+document.getElementById('search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const searchType = document.getElementById('search-type').value;
+    const searchQuery = document.getElementById('search-query').value;
+    
+    if (!searchQuery.trim()) {
+        // If search query is empty, reload the current board
+        if (currentBoardSlug) {
+            const boardButton = document.querySelector(`[data-board-slug="${currentBoardSlug}"]`);
+            if (boardButton) {
+                boardButton.click();
+            }
+        }
+        return;
+    }
+    
+    // Perform search across all boards via HTMX
+    const url = `/api/search/posts-html?q=${encodeURIComponent(searchQuery)}&search_type=${searchType}`;
+    htmx.ajax('GET', url, '#board-content');
+});
+
+// Handle pagination clicks
+document.addEventListener('click', function(event) {
+    if (event.target.matches('.pagination-link')) {
+        event.preventDefault();
+        const url = event.target.getAttribute('href');
+        
+        // Extract page number from URL
+        const urlParams = new URLSearchParams(url.split('?')[1]);
+        const page = urlParams.get('page') || '1';
+        
+        // Update browser URL
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.set('page', page);
+        if (currentBoardSlug) {
+            currentParams.set('board', currentBoardSlug);
+        }
+        const newUrl = `/?${currentParams.toString()}`;
+        history.pushState({board: currentBoardSlug, page: page}, '', newUrl);
+        
+        htmx.ajax('GET', url, '#board-content');
+    }
+});
+</script>
+{% endblock %}

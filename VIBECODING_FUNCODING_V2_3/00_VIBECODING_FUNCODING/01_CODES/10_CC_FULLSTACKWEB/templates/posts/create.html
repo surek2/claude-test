@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}새 게시글 작성 - {{ board.name }} - AICOM{% endblock %}
+
+{% block head %}
+<!-- Quill.js -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<style>
+    /* Quill editor styling */
+    .ql-toolbar {
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+        background-color: #f9fafb;
+    }
+    .ql-container {
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+    .ql-editor {
+        min-height: 300px;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    /* Quill 2.0 icon fixes */
+    .ql-toolbar .ql-stroke {
+        fill: none;
+        stroke: currentColor;
+    }
+    .ql-toolbar .ql-fill,
+    .ql-toolbar .ql-stroke.ql-fill {
+        fill: currentColor;
+    }
+    .ql-toolbar .ql-even {
+        fill-rule: evenodd;
+    }
+    .ql-toolbar button {
+        color: #444;
+    }
+    .ql-toolbar button:hover {
+        color: #06f;
+    }
+    .ql-toolbar button.ql-active {
+        color: #06f;
+    }
+    .ql-toolbar .ql-picker {
+        color: #444;
+    }
+    .ql-toolbar .ql-picker-options {
+        background-color: white;
+    }
+    /* Improve visibility */
+    .ql-snow .ql-toolbar button svg {
+        stroke: currentColor;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+        <div class="container flex h-14 items-center mx-auto px-4 sm:px-6">
+            <div class="mr-4 flex">
+                <a href="/" class="mr-6 flex items-center space-x-2">
+                    <span class="font-bold">AICOM</span>
+                </a>
+            </div>
+            <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+                <nav class="flex items-center space-x-6 text-sm font-medium">
+                    {% if user %}
+                        <span class="text-foreground">{{ user.username or user.email }}</span>
+                        <a href="#" 
+                           hx-post="/api/auth/logout"
+                           hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'
+                           class="text-foreground/60 transition-colors hover:text-foreground">
+                            로그아웃
+                        </a>
+                    {% else %}
+                        <a href="/login" class="text-foreground/60 transition-colors hover:text-foreground">
+                            로그인
+                        </a>
+                        <a href="/signup" class="text-foreground/60 transition-colors hover:text-foreground">
+                            회원가입
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Back Button and Title -->
+            <div class="mb-6">
+                <a href="/?board={{ board.slug }}" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    {{ board.name }}로 돌아가기
+                </a>
+                <h1 class="text-3xl font-bold">새 게시글 작성</h1>
+            </div>
+
+            <!-- Create Post Form -->
+            <form id="post-form" 
+                  hx-post="/api/posts/create" 
+                  hx-ext="json-enc"
+                  hx-swap="none"
+                  class="space-y-6">
+                
+                <input type="hidden" name="board_id" value="{{ board.id }}">
+                <input type="hidden" name="content" id="content-input">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                
+                <!-- Error/Success Message -->
+                <div id="form-message"></div>
+
+                <!-- Title Input -->
+                <div>
+                    <label for="title" class="block text-sm font-medium mb-2">
+                        제목
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        required
+                        maxlength="200"
+                        placeholder="게시글 제목을 입력하세요"
+                        class="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                    >
+                </div>
+
+                <!-- Content Editor -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">
+                        내용
+                    </label>
+                    <div id="editor" class="bg-white" style="min-height: 300px;"></div>
+                </div>
+
+                <!-- Admin Options -->
+                {% if user.is_admin %}
+                <div class="border border-border rounded-md p-4 bg-muted/10">
+                    <h3 class="text-sm font-medium mb-3">관리자 옵션</h3>
+                    <div class="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            id="is_pinned"
+                            name="is_pinned"
+                            value="true"
+                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                        >
+                        <label for="is_pinned" class="text-sm">
+                            상단 고정
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <a href="/?board={{ board.slug }}" 
+                       class="px-4 py-2 border border-input rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+                        취소
+                    </a>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+                        게시글 작성
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- Initialize Editor -->
+<script src="/static/js/editor.js"></script>
+<script>
+// Initialize Quill editor
+const editor = QuillEditor.initialize('editor');
+
+// Setup form submission
+QuillEditor.setupForm(editor, 'post-form', 'content');
+
+// Add CSRF token to JSON payload for json-enc
+document.getElementById('post-form').addEventListener('htmx:configRequest', function(event) {
+    // Add CSRF token to the JSON payload
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    if (event.detail.parameters && csrfToken) {
+        event.detail.parameters.csrf_token = csrfToken;
+    }
+});
+
+// Handle HTMX response after request
+document.addEventListener('htmx:afterRequest', function(event) {
+    if (event.detail.elt && event.detail.elt.id === 'post-form') {
+        if (event.detail.xhr.status === 201) {
+            const response = JSON.parse(event.detail.xhr.responseText);
+            if (response.id) {
+                // Redirect to the created post
+                window.location.href = `/boards/{{ board.slug }}/posts/${response.id}`;
+            }
+        } else if (event.detail.xhr.status >= 400) {
+            // Handle errors
+            const formMessage = document.getElementById('form-message');
+            const errorMessage = event.detail.xhr.status === 403 ? '권한이 없습니다.' : '오류가 발생했습니다. 다시 시도해주세요.';
+            formMessage.innerHTML = `
+                <div class="p-4 mb-4 bg-destructive/10 border border-destructive/20 rounded-md">
+                    <p class="text-sm text-destructive">${errorMessage}</p>
+                </div>
+            `;
+        }
+    }
+});
+
+</script>
+{% endblock %}

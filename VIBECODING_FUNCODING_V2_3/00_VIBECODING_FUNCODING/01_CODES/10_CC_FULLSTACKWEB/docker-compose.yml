@@ -1,0 +1,35 @@
+services:
+  # FastAPI application
+  fastapi:
+    build: .
+    container_name: aicom-fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./templates:/app/templates
+      - ./static:/app/static
+    networks:
+      - aicom-network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: aicom-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/usr/share/nginx/static:ro
+    networks:
+      - aicom-network
+    depends_on:
+      - fastapi
+
+networks:
+  aicom-network:
+    driver: bridge
