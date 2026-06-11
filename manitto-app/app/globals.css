@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-from: #FF6B6B;
+  --color-brand-to: #FF8E53;
+  --color-ios-bg: #F2F2F7;
+  --color-ios-card: #FFFFFF;
+  --radius-card: 20px;
+  --radius-btn: 14px;
+  --shadow-card: 0 4px 24px 0 rgba(0,0,0,0.08);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: #F2F2F7;
+}
