@@ -1,8 +1,11 @@
 import CheckClient from './CheckClient'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
+
+export const dynamic = 'force-dynamic'
 
 async function getMatchingStatus(): Promise<boolean> {
+  const supabase = getSupabase()
   const { data } = await supabase
     .from('participants')
     .select('matching_done')

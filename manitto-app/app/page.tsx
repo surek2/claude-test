@@ -1,7 +1,10 @@
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
+
+export const dynamic = 'force-dynamic'
 
 async function getCount() {
+  const supabase = getSupabase()
   const { count } = await supabase
     .from('participants')
     .select('*', { count: 'exact', head: true })

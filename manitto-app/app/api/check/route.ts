@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { verifyPassword } from '@/lib/hash'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const { name, password } = await req.json()
@@ -9,13 +11,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '이름과 비밀번호를 입력해 주세요' }, { status: 400 })
   }
 
+  const supabase = getSupabase()
   const { data: participant } = await supabase
     .from('participants')
     .select('password_hash, manitto_name')
     .eq('name', name.trim())
     .maybeSingle()
 
-  // 이름 존재 여부 노출하지 않음
   if (!participant) {
     return NextResponse.json({ error: '이름 또는 비밀번호가 올바르지 않습니다' }, { status: 401 })
   }

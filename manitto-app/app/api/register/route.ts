@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { hashPassword } from '@/lib/hash'
 import { createDerangement } from '@/lib/matching'
+
+export const dynamic = 'force-dynamic'
 
 const MAX_PARTICIPANTS = 9
 
@@ -15,7 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '비밀번호가 일치하지 않습니다' }, { status: 400 })
   }
 
-  // 정원 체크
+  const supabase = getSupabase()
+
   const { count } = await supabase
     .from('participants')
     .select('*', { count: 'exact', head: true })
@@ -24,7 +27,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '정원 9명이 모두 등록되었습니다' }, { status: 400 })
   }
 
-  // 중복 이름 체크
   const { data: existing } = await supabase
     .from('participants')
     .select('id')
@@ -35,7 +37,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '이미 등록된 이름입니다' }, { status: 400 })
   }
 
-  // 등록
   const passwordHash = await hashPassword(password)
   const { error: insertError } = await supabase
     .from('participants')
@@ -48,12 +49,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '등록 중 오류가 발생했습니다' }, { status: 500 })
   }
 
-  // 등록 후 인원 재조회
   const { count: newCount } = await supabase
     .from('participants')
     .select('*', { count: 'exact', head: true })
 
-  // 9명 완료 + 아직 매칭 안 됐으면 매칭 실행
   if ((newCount ?? 0) >= MAX_PARTICIPANTS) {
     const { data: alreadyMatched } = await supabase
       .from('participants')
